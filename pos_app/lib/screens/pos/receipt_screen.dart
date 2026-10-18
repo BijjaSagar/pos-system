@@ -98,20 +98,59 @@ class ReceiptScreen extends StatelessWidget {
                       Text('VAT/GST: ${store['tax_number']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     const Divider(height: 24),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Invoice: ${invoice['invoice_number']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text('${invoice['date']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Customer: ${invoice['customer']}', style: const TextStyle(fontSize: 13)),
-                        Text('Cashier: ${invoice['cashier']}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                      ],
+                    // Clean structured Invoice & Customer metadata
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.primary),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Invoice: ${invoice['invoice_number'] ?? 'N/A'}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                ),
+                              ),
+                              Text(
+                                '${invoice['date'] ?? ''}',
+                                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.person_outline_rounded, size: 16, color: AppColors.textSecondary),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Customer: ${invoice['customer'] ?? 'Walk-In'}',
+                                  style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Cashier: ${invoice['cashier'] ?? 'Staff'}',
+                                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     const Divider(height: 24),
 
@@ -194,20 +233,20 @@ class ReceiptScreen extends StatelessWidget {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(success ? 'Receipt sent to thermal printer!' : 'Printing failed'),
-                      backgroundColor: success ? Colors.green : Colors.red,
+                      content: Text(success ? 'Receipt printed successfully!' : 'Printing failed. Check printer paper & Bluetooth connection.'),
+                      backgroundColor: success ? AppColors.success : AppColors.danger,
                     ),
                   );
                 }
               },
-              icon: const Icon(Icons.print_rounded, size: 24),
+              icon: const Icon(Icons.print_rounded, size: 22),
               label: Text('Print Thermal Receipt (${printer.paperSizeLabel})'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(54),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 3,
+                elevation: 2,
               ),
             ),
 
@@ -218,6 +257,8 @@ class ReceiptScreen extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                side: const BorderSide(color: AppColors.border),
+                foregroundColor: AppColors.textPrimary,
               ),
               child: const Text('Start New POS Sale'),
             ),

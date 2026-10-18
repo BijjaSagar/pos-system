@@ -14,6 +14,32 @@ class AuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get shop => _shop;
   String get currencySymbol => _shop?['currency_symbol'] ?? '₹';
 
+  String get userRole => (_user?['role'] ?? 'cashier').toString().toLowerCase();
+  String get roleDisplayName {
+    switch (userRole) {
+      case 'super_admin':
+        return 'Super Admin';
+      case 'store_owner':
+      case 'owner':
+        return 'Store Owner';
+      case 'manager':
+        return 'Store Manager';
+      case 'employee':
+        return 'Staff Member';
+      case 'cashier':
+      default:
+        return 'Cashier';
+    }
+  }
+
+  bool get isOwnerOrAdmin => userRole == 'store_owner' || userRole == 'owner' || userRole == 'super_admin';
+  bool get isManagerOrAbove => isOwnerOrAdmin || userRole == 'manager';
+
+  void updateShop(Map<String, dynamic> newShop) {
+    _shop = {...?_shop, ...newShop};
+    notifyListeners();
+  }
+
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     notifyListeners();

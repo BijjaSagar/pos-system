@@ -9,6 +9,7 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Ledger;
 use App\Models\Shop;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -283,6 +284,183 @@ class PosController extends Controller
                     ];
                 }),
             ],
+        ]);
+    }
+
+    /**
+     * Get all categories for POS and product forms.
+     */
+    public function getCategories(Request $request)
+    {
+        $categories = Category::all();
+        return response()->json([
+            'success' => true,
+            'data' => $categories,
+        ]);
+    }
+
+    /**
+     * Create a new category.
+     */
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100',
+        ]);
+
+        $category = Category::create([
+            'name' => $request->name,
+            'code' => $request->code ?? strtoupper(Str::slug($request->name)),
+            'icon' => $request->icon ?? null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Category created successfully',
+            'data' => $category,
+        ], 201);
+    }
+
+    /**
+     * Create a new product from the mobile app (image optional, GST optional).
+     */
+    public function storeProduct(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'retailer_price' => 'required|numeric|min:0',
+            'category_id' => 'nullable|exists:categories,id',
+        ]);
+
+        $shopId = $request->user()->shop_id ?? 1;
+
+        // Auto-generate code if empty
+        $code = $request->code ?: 'PRD-' . strtoupper(Str::random(6));
+
+        $product = Product::create([
+            'shop_id' => $shopId,
+            'category_id' => $request->category_id,
+            'name' => $request->name,
+            'code' => $code,
+            'purchase_price' => $request->purchase_price ?? 0,
+            'retailer_price' => $request->retailer_price,
+            'dealer_price' => $request->dealer_price ?? $request->retailer_price,
+            'wholesale_price' => $request->wholesale_price ?? $request->retailer_price,
+            'stock' => $request->stock ?? 100,
+            'alert_quantity' => $request->alert_quantity ?? 10,
+            'tax_rate' => $request->tax_rate ?? 0, // GST rate (e.g. 5, 12, 18 or 0 if no GST)
+            'image_url' => $request->image_url,
+            'description' => $request->description,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product created successfully',
+            'data' => $product->load('category'),
+        ], 201);
+    }
+
+    /**
+     * Update an existing product.
+     */
+    public function updateProduct(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $product->update($request->only([
+            'name',
+            'category_id',
+            'code',
+            'purchase_price',
+            'retailer_price',
+            'dealer_price',
+            'wholesale_price',
+            'stock',
+            'alert_quantity',
+            'tax_rate',
+            'image_url',
+            'description',
+            'is_active',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product updated successfully',
+            'data' => $product->load('category'),
+        ]);
+    }
+
+    /**
+     * Delete/deactivate a product.
+     */
+    public function deleteProduct(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product removed successfully',
+        ]);
+    }
+
+    /**
+     * Get recent sales / order history.
+     */
+    public function getSales(Request $request)
+    {
+        $sales = Sale::with(['items', 'customer', 'cashier'])
+            ->latest('sale_date')
+            ->paginate(25);
+
+        return response()->json([
+            'success' => true,
+            'data' => $sales,
+        ]);
+    }
+
+    /**
+     * Get store settings.
+     */
+    public function getSettings(Request $request)
+    {
+        $user = $request->user();
+        $shop = Shop::findOrFail($user->shop_id ?? 1);
+
+        return response()->json([
+            'success' => true,
+            'data' => $shop,
+        ]);
+    }
+
+    /**
+     * Update store settings.
+     */
+    public function updateSettings(Request $request)
+    {
+        $user = $request->user();
+        $shop = Shop::findOrFail($user->shop_id ?? 1);
+
+        $shop->update($request->only([
+            'name',
+            'phone',
+            'email',
+            'address',
+            'currency_symbol',
+            'currency_code',
+            'tax_number',
+            'thermal_paper_size',
+            'receipt_header',
+            'receipt_footer',
+            'primary_color',
+            'logo_url',
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Store settings updated successfully',
+            'data' => $shop,
         ]);
     }
 }

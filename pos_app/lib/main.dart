@@ -6,7 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/printer_provider.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/pos/pos_screen.dart';
+import 'screens/main_nav_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,7 +55,7 @@ class AuthGate extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
 
     if (auth.isAuthenticated) {
-      return const PosScreen();
+      return const MainNavScreen();
     }
     return const LoginScreen();
   }

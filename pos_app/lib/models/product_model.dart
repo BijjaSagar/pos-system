@@ -10,8 +10,10 @@ class ProductModel {
   final double alertQuantity;
   final double taxRate;
   final String? imageUrl;
+  final int? categoryId;
   final String? categoryName;
   final String? unitName;
+  final String? description;
   double activePrice;
 
   ProductModel({
@@ -26,8 +28,10 @@ class ProductModel {
     required this.alertQuantity,
     required this.taxRate,
     this.imageUrl,
+    this.categoryId,
     this.categoryName,
     this.unitName,
+    this.description,
     required this.activePrice,
   });
 
@@ -44,8 +48,10 @@ class ProductModel {
       alertQuantity: double.tryParse(json['alert_quantity']?.toString() ?? '0') ?? 0.0,
       taxRate: double.tryParse(json['tax_rate']?.toString() ?? '0') ?? 0.0,
       imageUrl: json['image_url'],
+      categoryId: json['category_id'] ?? json['category']?['id'],
       categoryName: json['category']?['name'],
       unitName: json['unit']?['short_name'],
+      description: json['description'],
       activePrice: double.tryParse(json['active_price']?.toString() ?? json['retailer_price']?.toString() ?? '0') ?? 0.0,
     );
   }

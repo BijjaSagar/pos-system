@@ -3,11 +3,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/network/api_client.dart';
+import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/printer_provider.dart';
-import '../auth/login_screen.dart';
 import '../printer/printer_settings_screen.dart';
 import 'cart_sheet.dart';
 
@@ -20,12 +20,15 @@ class PosScreen extends StatefulWidget {
 
 class _PosScreenState extends State<PosScreen> {
   List<ProductModel> _products = [];
+  List<CategoryModel> _categories = [];
+  int? _selectedCategoryId;
   bool _isLoading = false;
   final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _fetchCategories();
     _fetchProducts();
   }
 
@@ -35,15 +38,30 @@ class _PosScreenState extends State<PosScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchProducts({String? search}) async {
+  Future<void> _fetchCategories() async {
+    try {
+      final res = await ApiClient().dio.get('/pos/categories');
+      if (res.data['success'] == true) {
+        final list = (res.data['data'] as List)
+            .map((c) => CategoryModel.fromJson(c))
+            .toList();
+        setState(() => _categories = list);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchProducts({String? search, int? categoryId}) async {
     setState(() => _isLoading = true);
     final cart = context.read<CartProvider>();
 
     try {
-      final res = await ApiClient().dio.get('/pos/products', queryParameters: {
+      final query = <String, dynamic>{
         'tier': cart.activeTier,
-        if (search != null && search.isNotEmpty) 'search': search,
-      });
+      };
+      if (search != null && search.isNotEmpty) query['search'] = search;
+      if (categoryId != null) query['category_id'] = categoryId;
+
+      final res = await ApiClient().dio.get('/pos/products', queryParameters: query);
 
       if (res.data['success'] == true) {
         final list = (res.data['data']['data'] as List)
@@ -107,7 +125,10 @@ class _PosScreenState extends State<PosScreen> {
         cart.addToCart(product);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added ${product.name} to cart')),
+            SnackBar(
+              content: Text('Added ${product.name} to cart'),
+              backgroundColor: AppColors.success,
+            ),
           );
         }
       }
@@ -144,13 +165,29 @@ class _PosScreenState extends State<PosScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              auth.shop?['name'] ?? 'POS Terminal',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Text(
+                  auth.shop?['name'] ?? 'NesCafe Solapur',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    auth.roleDisplayName,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
             ),
             Text(
-              'Cashier: ${auth.user?['name'] ?? 'User'}',
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
+              'Cashier: ${auth.user?['name'] ?? 'Staff'}',
+              style: const TextStyle(fontSize: 11, color: Colors.white70),
             ),
           ],
         ),
@@ -164,13 +201,13 @@ class _PosScreenState extends State<PosScreen> {
             },
             icon: Icon(
               printer.isConnected ? Icons.print_rounded : Icons.print_disabled_rounded,
-              color: printer.isConnected ? Colors.greenAccent : Colors.orangeAccent,
+              color: printer.isConnected ? Colors.greenAccent : Colors.amberAccent,
               size: 20,
             ),
             label: Text(
               printer.isConnected ? printer.paperSizeLabel : 'No Printer',
               style: TextStyle(
-                color: printer.isConnected ? Colors.greenAccent : Colors.orangeAccent,
+                color: printer.isConnected ? Colors.greenAccent : Colors.amberAccent,
                 fontSize: 11,
               ),
             ),
@@ -180,36 +217,24 @@ class _PosScreenState extends State<PosScreen> {
             tooltip: 'Barcode Scanner',
             onPressed: _openBarcodeScanner,
           ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Sign Out',
-            onPressed: () async {
-              await auth.logout();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              }
-            },
-          ),
         ],
       ),
       body: Column(
         children: [
-          // Search & Quick Filter Bar
+          // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search products by name or barcode...',
+                hintText: 'Search coffees, snacks, items...',
                 prefixIcon: const Icon(Icons.search, color: AppColors.primary),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          _fetchProducts();
+                          _fetchProducts(categoryId: _selectedCategoryId);
                         },
                       )
                     : null,
@@ -218,10 +243,58 @@ class _PosScreenState extends State<PosScreen> {
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
               ),
-              onSubmitted: (val) => _fetchProducts(search: val),
+              onSubmitted: (val) => _fetchProducts(search: val, categoryId: _selectedCategoryId),
+            ),
+          ),
+
+          // Horizontal Category Tabs Bar
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Row(
+              children: [
+                ChoiceChip(
+                  label: const Text('All Items'),
+                  selected: _selectedCategoryId == null,
+                  selectedColor: AppColors.primary,
+                  labelStyle: TextStyle(
+                    color: _selectedCategoryId == null ? Colors.white : AppColors.textPrimary,
+                    fontWeight: _selectedCategoryId == null ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 12,
+                  ),
+                  onSelected: (_) {
+                    setState(() => _selectedCategoryId = null);
+                    _fetchProducts(search: _searchController.text.trim());
+                  },
+                ),
+                const SizedBox(width: 8),
+                ..._categories.map((c) {
+                  final isSel = _selectedCategoryId == c.id;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(c.name),
+                      selected: isSel,
+                      selectedColor: AppColors.primary,
+                      labelStyle: TextStyle(
+                        color: isSel ? Colors.white : AppColors.textPrimary,
+                        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 12,
+                      ),
+                      onSelected: (_) {
+                        setState(() => _selectedCategoryId = c.id);
+                        _fetchProducts(
+                          search: _searchController.text.trim(),
+                          categoryId: c.id,
+                        );
+                      },
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
 
@@ -230,12 +303,12 @@ class _PosScreenState extends State<PosScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _products.isEmpty
-                    ? const Center(child: Text('No products found.'))
+                    ? const Center(child: Text('No products available in this category.'))
                     : GridView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.fromLTRB(16, 6, 16, 80),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.85,
+                          childAspectRatio: 0.78,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                         ),
@@ -244,88 +317,160 @@ class _PosScreenState extends State<PosScreen> {
                           final product = _products[index];
                           product.updateTier(cart.activeTier);
 
-                          return InkWell(
-                            onTap: () {
-                              cart.addToCart(product);
-                              ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Added ${product.name}'),
-                                  duration: const Duration(milliseconds: 800),
-                                ),
+                          // Check if item is already in cart
+                          final inCartItem = cart.items.cast<dynamic>().firstWhere(
+                                (i) => i.product.id == product.id,
+                                orElse: () => null,
                               );
-                            },
-                            child: Card(
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              color: Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
+                          final qtyInCart = inCartItem != null ? inCartItem.quantity.toInt() : 0;
+                          final hasGst = product.taxRate > 0;
+
+                          return Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            color: Colors.white,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Product Image Thumbnail or Fallback Icon
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
                                       child: Container(
                                         width: double.infinity,
+                                        color: AppColors.background,
+                                        child: (product.imageUrl != null && product.imageUrl!.startsWith('http'))
+                                            ? Image.network(
+                                                product.imageUrl!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) => const Icon(
+                                                  Icons.coffee_rounded,
+                                                  size: 38,
+                                                  color: AppColors.primary,
+                                                ),
+                                              )
+                                            : const Icon(
+                                                Icons.coffee_rounded,
+                                                size: 38,
+                                                color: AppColors.primary,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  // Name
+                                  Text(
+                                    product.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                  ),
+                                  const SizedBox(height: 3),
+
+                                  // GST Badge & SKU
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                         decoration: BoxDecoration(
-                                          color: AppColors.background,
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: hasGst ? Colors.amber.shade50 : Colors.green.shade50,
+                                          borderRadius: BorderRadius.circular(4),
                                         ),
-                                        child: const Icon(
-                                          Icons.inventory_2_outlined,
-                                          size: 40,
+                                        child: Text(
+                                          hasGst ? 'GST ${product.taxRate.toInt()}%' : 'No GST',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: hasGst ? Colors.amber.shade900 : Colors.green.shade800,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Stock: ${product.stock.toInt()}',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: product.stock <= product.alertQuantity ? Colors.red : Colors.grey.shade600,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+
+                                  // Price & Add to Cart / Stepper
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '$sym${product.activePrice.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
                                           color: AppColors.primary,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      product.name,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Stock: ${product.stock.toInt()}',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: product.stock <= product.alertQuantity ? Colors.red : Colors.grey,
+                                      if (qtyInCart == 0)
+                                        InkWell(
+                                          onTap: () {
+                                            cart.addToCart(product);
+                                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Added ${product.name}'),
+                                                duration: const Duration(milliseconds: 600),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: const BoxDecoration(
+                                              color: AppColors.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(Icons.add, size: 16, color: Colors.white),
                                           ),
+                                        )
+                                      else
+                                        Row(
+                                          children: [
+                                            InkWell(
+                                              onTap: () => cart.updateQuantity(product.id, (qtyInCart - 1).toDouble()),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade200,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(Icons.remove, size: 14, color: AppColors.textPrimary),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                                              child: Text(
+                                                '$qtyInCart',
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () => cart.updateQuantity(product.id, (qtyInCart + 1).toDouble()),
+                                              child: Container(
+                                                padding: const EdgeInsets.all(4),
+                                                decoration: const BoxDecoration(
+                                                  color: AppColors.primary,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(Icons.add, size: 14, color: Colors.white),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          'SKU: ${product.code}',
-                                          style: const TextStyle(fontSize: 10, color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          '$sym${product.activePrice.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary.withValues(alpha: 0.1),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(Icons.add, size: 18, color: AppColors.primary),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -333,12 +478,12 @@ class _PosScreenState extends State<PosScreen> {
                       ),
           ),
 
-          // Bottom Cart Bar
+          // Bottom Floating Cart Bar
           if (cart.items.isNotEmpty)
             GestureDetector(
               onTap: _showCartSheet,
               child: Container(
-                margin: const EdgeInsets.all(16),
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
@@ -367,7 +512,7 @@ class _PosScreenState extends State<PosScreen> {
                               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             Text(
-                              'Tier: ${cart.activeTier.toUpperCase()}',
+                              'Tap to Checkout & Print',
                               style: const TextStyle(color: Colors.white70, fontSize: 11),
                             ),
                           ],
