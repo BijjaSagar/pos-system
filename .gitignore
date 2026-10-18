@@ -1,0 +1,39 @@
+# Root Git Ignore
+.DS_Store
+Thumbs.db
+*.apk
+*.log
+*.tmp
+
+# Laravel backend ignores
+backend/.env
+backend/.env.backup
+backend/.env.production
+backend/vendor/
+backend/node_modules/
+backend/public/storage
+backend/storage/*.key
+backend/storage/logs/*.log
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+
+# Flutter pos_app ignores
+pos_app/.dart_tool/
+pos_app/.flutter-plugins
+pos_app/.flutter-plugins-dependencies
+pos_app/.pub-cache/
+pos_app/.pub/
+pos_app/build/
+pos_app/coverage/
+pos_app/*.iml
+pos_app/.idea/
+pos_app/macos/Flutter/ephemeral/
+pos_app/ios/Flutter/ephemeral/
+pos_app/windows/flutter/ephemeral/
+pos_app/linux/flutter/ephemeral/
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
