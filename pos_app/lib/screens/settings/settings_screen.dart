@@ -98,24 +98,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _isSaving = false);
   }
 
-  void _quickSwitchRole(String email, String roleTitle) async {
-    final auth = context.read<AuthProvider>();
-    final success = await auth.login(email, '112233');
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Switched to $roleTitle'),
-          backgroundColor: AppColors.primary,
-        ),
-      );
-      // Re-populate text fields
-      final shop = auth.shop ?? {};
-      _nameController.text = shop['name'] ?? '';
-      _phoneController.text = shop['phone'] ?? '';
-      _taxController.text = shop['tax_number'] ?? '';
-      setState(() {});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,54 +430,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Quick Role Switch Card (for testing & role demonstration)
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.switch_account_rounded, color: AppColors.primary),
-                        SizedBox(width: 8),
-                        Text('Switch User Account / Role', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Test role-wise view and access permissions:',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ActionChip(
-                          avatar: const Icon(Icons.admin_panel_settings_rounded, size: 16, color: Colors.amber),
-                          label: const Text('Store Owner'),
-                          onPressed: () => _quickSwitchRole('store@pospro.app', 'Store Owner'),
-                        ),
-                        ActionChip(
-                          avatar: const Icon(Icons.coffee_rounded, size: 16, color: Colors.blue),
-                          label: const Text('NesCafe Manager'),
-                          onPressed: () => _quickSwitchRole('david.manager@pospro.app', 'Manager'),
-                        ),
-                        ActionChip(
-                          avatar: const Icon(Icons.point_of_sale_rounded, size: 16, color: Colors.green),
-                          label: const Text('Cashier Staff'),
-                          onPressed: () => _quickSwitchRole('cashier@pospro.app', 'Cashier'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
 
             // Logout Button

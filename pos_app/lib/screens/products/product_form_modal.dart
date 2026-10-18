@@ -347,7 +347,7 @@ class _ProductFormModalState extends State<ProductFormModal> {
                               TextFormField(
                                 controller: _codeController,
                                 decoration: InputDecoration(
-                                  hintText: 'COF-001 (Optional)',
+                                  hintText: 'e.g. COF-001',
                                   prefixIcon: const Icon(Icons.qr_code_rounded, color: AppColors.primary, size: 20),
                                   filled: true,
                                   fillColor: AppColors.background,

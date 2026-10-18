@@ -12,8 +12,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: 'store@pospro.app');
-  final _passwordController = TextEditingController(text: '112233');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   @override
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid credentials or inactive account')),
+        const SnackBar(content: Text('Invalid email or password')),
       );
     }
   }
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'NesCafe Solapur & Cloud Management',
+                        'Sign in to access your POS terminal',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 13,
@@ -122,6 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: 'Email Address',
+                          hintText: 'Enter your email',
                           prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           filled: true,
@@ -136,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           labelText: 'Password',
+                          hintText: 'Enter your password',
                           prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primary),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -174,83 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Sign In to Terminal',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Role Selectors
-                      const Text(
-                        'One-Tap Role Login:',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          ActionChip(
-                            avatar: const Icon(Icons.admin_panel_settings_rounded, size: 16, color: Colors.amber),
-                            label: const Text('Store Owner', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            onPressed: () {
-                              _emailController.text = 'store@pospro.app';
-                              _passwordController.text = '112233';
-                            },
-                          ),
-                          ActionChip(
-                            avatar: const Icon(Icons.coffee_rounded, size: 16, color: Colors.blue),
-                            label: const Text('NesCafe Manager', style: TextStyle(fontSize: 11)),
-                            onPressed: () {
-                              _emailController.text = 'david.manager@pospro.app';
-                              _passwordController.text = '112233';
-                            },
-                          ),
-                          ActionChip(
-                            avatar: const Icon(Icons.point_of_sale_rounded, size: 16, color: Colors.green),
-                            label: const Text('Cashier Staff', style: TextStyle(fontSize: 11)),
-                            onPressed: () {
-                              _emailController.text = 'cashier@pospro.app';
-                              _passwordController.text = '112233';
-                            },
-                          ),
-                          ActionChip(
-                            label: const Text('Super Admin', style: TextStyle(fontSize: 11)),
-                            onPressed: () {
-                              _emailController.text = 'acnooteam@gmail.com';
-                              _passwordController.text = '112233';
-                            },
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Cloud Server Indicator
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green.shade200),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.cloud_done_rounded, color: Colors.green, size: 16),
-                            SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'Production Server: https://vaakai.app/api',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF1B5E20),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ],
                   ),

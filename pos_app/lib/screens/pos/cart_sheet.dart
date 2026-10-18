@@ -156,16 +156,19 @@ class _CartSheetState extends State<CartSheet> {
                 ),
                 const SizedBox(height: 8),
                 // Customer Tier Selector (Recalibrates prices)
-                Row(
-                  children: [
-                    const Text('Price Tier: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
-                    const SizedBox(width: 6),
-                    _tierChip(cart, 'Retailer', 'retailer'),
-                    const SizedBox(width: 6),
-                    _tierChip(cart, 'Dealer', 'dealer'),
-                    const SizedBox(width: 6),
-                    _tierChip(cart, 'Wholesale', 'wholesaler'),
-                  ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      const Text('Price Tier: ', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+                      const SizedBox(width: 6),
+                      _tierChip(cart, 'Retailer', 'retailer'),
+                      const SizedBox(width: 6),
+                      _tierChip(cart, 'Dealer', 'dealer'),
+                      const SizedBox(width: 6),
+                      _tierChip(cart, 'Wholesale', 'wholesaler'),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -189,7 +192,12 @@ class _CartSheetState extends State<CartSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                                 Text(
                                   'Unit: $sym${item.unitPrice.toStringAsFixed(2)} | Subtotal: $sym${item.subtotal.toStringAsFixed(2)}',
                                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
@@ -227,21 +235,21 @@ class _CartSheetState extends State<CartSheet> {
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Payment Method:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(value: 'cash', label: Text('Cash')),
-                        ButtonSegment(value: 'card', label: Text('Card')),
-                        ButtonSegment(value: 'due', label: Text('Due')),
-                      ],
-                      selected: {_paymentMethod},
-                      onSelectionChanged: (val) => setState(() => _paymentMethod = val.first),
-                    ),
-                  ],
+                const Text('Payment Method', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'cash', label: Text('Cash'), icon: Icon(Icons.payments_outlined, size: 16)),
+                      ButtonSegment(value: 'card', label: Text('Card / UPI'), icon: Icon(Icons.credit_card_outlined, size: 16)),
+                      ButtonSegment(value: 'due', label: Text('Due Balance'), icon: Icon(Icons.pending_actions_outlined, size: 16)),
+                    ],
+                    selected: {_paymentMethod},
+                    onSelectionChanged: (val) => setState(() => _paymentMethod = val.first),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(

@@ -164,14 +164,20 @@ class _PosScreenState extends State<PosScreen> {
         foregroundColor: Colors.white,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  auth.shop?['name'] ?? 'NesCafe Solapur',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    auth.shop?['name'] ?? 'NesCafe Solapur',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
@@ -187,29 +193,42 @@ class _PosScreenState extends State<PosScreen> {
             ),
             Text(
               'Cashier: ${auth.user?['name'] ?? 'Staff'}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 11, color: Colors.white70),
             ),
           ],
         ),
         actions: [
-          // Bluetooth Printer Status indicator button
-          TextButton.icon(
+          // Bluetooth Printer Status indicator icon with live dot
+          IconButton(
+            tooltip: printer.isConnected ? 'Printer: ${printer.paperSizeLabel}' : 'Connect Printer',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const PrinterSettingsScreen()),
               );
             },
-            icon: Icon(
-              printer.isConnected ? Icons.print_rounded : Icons.print_disabled_rounded,
-              color: printer.isConnected ? Colors.greenAccent : Colors.amberAccent,
-              size: 20,
-            ),
-            label: Text(
-              printer.isConnected ? printer.paperSizeLabel : 'No Printer',
-              style: TextStyle(
-                color: printer.isConnected ? Colors.greenAccent : Colors.amberAccent,
-                fontSize: 11,
-              ),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  printer.isConnected ? Icons.print_rounded : Icons.print_disabled_rounded,
+                  color: Colors.white,
+                ),
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: printer.isConnected ? Colors.greenAccent : Colors.amberAccent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary, width: 1.5),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           IconButton(
@@ -305,10 +324,10 @@ class _PosScreenState extends State<PosScreen> {
                 : _products.isEmpty
                     ? const Center(child: Text('No products available in this category.'))
                     : GridView.builder(
-                        padding: const EdgeInsets.fromLTRB(16, 6, 16, 80),
+                        padding: EdgeInsets.fromLTRB(16, 6, 16, cart.items.isNotEmpty ? 110 : 24),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.78,
+                          childAspectRatio: 0.74,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                         ),
@@ -405,12 +424,18 @@ class _PosScreenState extends State<PosScreen> {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        '$sym${product.activePrice.toStringAsFixed(2)}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                          color: AppColors.primary,
+                                      Flexible(
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            '$sym${product.activePrice.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                              color: AppColors.primary,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       if (qtyInCart == 0)

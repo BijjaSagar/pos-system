@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/printer_provider.dart';
+import '../../services/thermal_printer_service.dart';
 import '../printer/printer_settings_screen.dart';
 
 class ReceiptScreen extends StatelessWidget {
@@ -119,7 +120,7 @@ class ReceiptScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${invoice['date'] ?? ''}',
+                                ThermalPrinterService.formatDate(invoice['date']),
                                 style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
                               ),
                             ],
@@ -162,8 +163,13 @@ class ReceiptScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              flex: 3,
-                              child: Text(item['name'] ?? '', style: const TextStyle(fontSize: 13)),
+                              flex: 4,
+                              child: Text(
+                                item['name'] ?? '',
+                                style: const TextStyle(fontSize: 13),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                             Expanded(
                               flex: 1,
