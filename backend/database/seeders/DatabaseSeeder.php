@@ -15,14 +15,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Super Admin Account (Matching credentials provided by user)
-        $superAdmin = User::create([
-            'name' => 'Super Administrator',
-            'email' => 'acnooteam@gmail.com',
-            'password' => Hash::make('112233'),
-            'role' => 'super_admin',
-            'phone' => '+1234567890',
-            'is_active' => true,
-        ]);
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'acnooteam@gmail.com'],
+            [
+                'name' => 'Super Administrator',
+                'password' => Hash::make('112233'),
+                'role' => 'super_admin',
+                'phone' => '+1234567890',
+                'is_active' => true,
+            ]
+        );
 
         // 2. Default SaaS Subscription Plans
         $freePlanId = DB::table('plans')->insertGetId([
@@ -94,95 +96,164 @@ class DatabaseSeeder extends Seeder
             ]));
         }
 
-        // 4. Demo Store / Shop
+        // 4. Default Store / Shop (NesCafe Solapur)
         $shopId = DB::table('shops')->insertGetId([
-            'name' => 'Acnoo Flagship Retail Store',
-            'category_id' => 1,
+            'name' => 'NesCafe Solapur',
+            'category_id' => 5, // Restaurant & Cafe
             'plan_id' => $enterprisePlanId,
             'plan_expires_at' => now()->addYears(10),
-            'phone' => '+1 (555) 019-2834',
+            'phone' => '+91 98220 12345',
             'email' => 'store@pospro.app',
-            'address' => '742 Evergreen Terrace, Springfield',
-            'currency_symbol' => '$',
-            'currency_code' => 'USD',
-            'tax_number' => 'US-VAT-9988221',
+            'address' => 'Station Road, Solapur, Maharashtra 413001',
+            'currency_symbol' => '₹',
+            'currency_code' => 'INR',
+            'currency_position' => 'prefix',
+            'tax_number' => '27AAECN1234F1Z8',
+            'logo_url' => 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&auto=format&fit=crop&q=80',
+            'primary_color' => '#D97706',
             'thermal_paper_size' => 'mm58',
-            'receipt_header' => 'Welcome to Acnoo POS Store!',
-            'receipt_footer' => 'Goods once sold are returnable within 7 days with receipt. Thank you!',
+            'receipt_header' => "☕ NesCafe Solapur - Fresh Brews & Bites\nGSTIN: 27AAECN1234F1Z8",
+            'receipt_footer' => "Thank you for visiting NesCafe!\nFollow us @nescafe_solapur | Free Wi-Fi: NesCafe_Guest",
             'status' => 'active',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // 5. Store Owner & Cashier Users
-        $storeOwner = User::create([
-            'name' => 'John Store Manager',
-            'email' => 'store@pospro.app',
-            'password' => Hash::make('112233'),
-            'role' => 'store_owner',
-            'shop_id' => $shopId,
-            'phone' => '+1 (555) 019-2834',
-            'is_active' => true,
-        ]);
+        // 5. Store Owner, Manager, Employee, and Cashier Users
+        $storeOwner = User::updateOrCreate(
+            ['email' => 'store@pospro.app'],
+            [
+                'name' => 'Store Owner',
+                'password' => Hash::make('112233'),
+                'role' => 'store_owner',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 12345',
+                'is_active' => true,
+            ]
+        );
 
-        $cashier = User::create([
-            'name' => 'Emma Cashier',
-            'email' => 'cashier@pospro.app',
-            'password' => Hash::make('112233'),
-            'role' => 'cashier',
-            'shop_id' => $shopId,
-            'phone' => '+1 (555) 019-5566',
-            'is_active' => true,
-        ]);
+        $manager = User::updateOrCreate(
+            ['email' => 'david.manager@pospro.app'],
+            [
+                'name' => 'David Miller (Manager)',
+                'password' => Hash::make('112233'),
+                'role' => 'manager',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 54321',
+                'is_active' => true,
+            ]
+        );
+
+        $employee = User::updateOrCreate(
+            ['email' => 'carlos.employee@pospro.app'],
+            [
+                'name' => 'Carlos Gomez (Employee)',
+                'password' => Hash::make('112233'),
+                'role' => 'employee',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 98765',
+                'is_active' => true,
+            ]
+        );
+
+        $cashier = User::updateOrCreate(
+            ['email' => 'cashier@pospro.app'],
+            [
+                'name' => 'Emma Cashier',
+                'password' => Hash::make('112233'),
+                'role' => 'cashier',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 11223',
+                'is_active' => true,
+            ]
+        );
+
+        $nescafeManager = User::updateOrCreate(
+            ['email' => 'nescafe@pospro.app'],
+            [
+                'name' => 'NesCafe Solapur Manager',
+                'password' => Hash::make('112233'),
+                'role' => 'store_owner',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 12345',
+                'is_active' => true,
+            ]
+        );
+
+        $barista = User::updateOrCreate(
+            ['email' => 'barista@pospro.app'],
+            [
+                'name' => 'Solapur Barista Cashier',
+                'password' => Hash::make('112233'),
+                'role' => 'cashier',
+                'shop_id' => $shopId,
+                'phone' => '+91 98220 44556',
+                'is_active' => true,
+            ]
+        );
 
         // 6. Default Warehouse
         $warehouseId = DB::table('warehouses')->insertGetId([
             'shop_id' => $shopId,
-            'name' => 'Main Outlet Warehouse',
-            'phone' => '+1 (555) 019-2834',
-            'address' => 'In-store storage rack A1-B4',
+            'name' => 'Main Cafe Counter & Kitchen',
+            'phone' => '+91 98220 12345',
+            'address' => 'Station Road, Solapur',
             'is_default' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         // 7. Master Categories, Brands, Units
-        $catElectronics = DB::table('categories')->insertGetId([
+        $catHot = DB::table('categories')->insertGetId([
             'shop_id' => $shopId,
-            'name' => 'Smartphones & Accessories',
-            'code' => 'CAT-01',
+            'name' => 'Hot Coffees & Tea',
+            'code' => 'HOT-BEV',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $catAudio = DB::table('categories')->insertGetId([
+        $catCold = DB::table('categories')->insertGetId([
             'shop_id' => $shopId,
-            'name' => 'Audio & Headphones',
-            'code' => 'CAT-02',
+            'name' => 'Cold Coffees & Frappes',
+            'code' => 'COLD-COF',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $catSandwich = DB::table('categories')->insertGetId([
+            'shop_id' => $shopId,
+            'name' => 'Burgers & Sandwiches',
+            'code' => 'BURG-SND',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $catSnacks = DB::table('categories')->insertGetId([
+            'shop_id' => $shopId,
+            'name' => 'Snacks & Quick Bites',
+            'code' => 'SNACKS',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        $brandApple = DB::table('brands')->insertGetId(['shop_id' => $shopId, 'name' => 'Apple', 'created_at' => now(), 'updated_at' => now()]);
-        $brandSony = DB::table('brands')->insertGetId(['shop_id' => $shopId, 'name' => 'Sony', 'created_at' => now(), 'updated_at' => now()]);
-        $brandAnker = DB::table('brands')->insertGetId(['shop_id' => $shopId, 'name' => 'Anker', 'created_at' => now(), 'updated_at' => now()]);
+        $brandNescafe = DB::table('brands')->insertGetId(['shop_id' => $shopId, 'name' => 'NesCafe', 'created_at' => now(), 'updated_at' => now()]);
+        $brandFresh = DB::table('brands')->insertGetId(['shop_id' => $shopId, 'name' => 'Kitchen Fresh', 'created_at' => now(), 'updated_at' => now()]);
 
+        $unitCup = DB::table('units')->insertGetId(['shop_id' => $shopId, 'name' => 'Cup', 'short_name' => 'Cup', 'created_at' => now(), 'updated_at' => now()]);
+        $unitPlate = DB::table('units')->insertGetId(['shop_id' => $shopId, 'name' => 'Plate', 'short_name' => 'Plt', 'created_at' => now(), 'updated_at' => now()]);
         $unitPcs = DB::table('units')->insertGetId(['shop_id' => $shopId, 'name' => 'Pieces', 'short_name' => 'Pcs', 'created_at' => now(), 'updated_at' => now()]);
-        $unitBox = DB::table('units')->insertGetId(['shop_id' => $shopId, 'name' => 'Box', 'short_name' => 'Box', 'created_at' => now(), 'updated_at' => now()]);
 
-        // 8. Sample Products with Multi-Tier Pricing (Retailer, Dealer, Wholesaler)
+        // 8. Cafe Products (NesCafe Solapur Menu)
         $p1 = DB::table('products')->insertGetId([
             'shop_id' => $shopId,
-            'category_id' => $catAudio,
-            'brand_id' => $brandSony,
-            'unit_id' => $unitPcs,
-            'name' => 'Sony WH-1000XM5 Wireless Headphones',
-            'code' => '890103001',
-            'purchase_price' => 240.00,
-            'retailer_price' => 349.00,
-            'dealer_price' => 310.00,
-            'wholesale_price' => 290.00,
-            'stock' => 25.00,
-            'alert_quantity' => 5.00,
+            'category_id' => $catHot,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Classic NesCafe Hot Coffee',
+            'code' => 'COF-001',
+            'purchase_price' => 15.00,
+            'retailer_price' => 40.00,
+            'dealer_price' => 40.00,
+            'wholesale_price' => 40.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
             'tax_rate' => 5.00,
             'created_at' => now(),
             'updated_at' => now(),
@@ -190,17 +261,17 @@ class DatabaseSeeder extends Seeder
 
         $p2 = DB::table('products')->insertGetId([
             'shop_id' => $shopId,
-            'category_id' => $catElectronics,
-            'brand_id' => $brandAnker,
-            'unit_id' => $unitPcs,
-            'name' => 'Anker 65W Fast USB-C Charger',
-            'code' => '890103002',
-            'purchase_price' => 18.00,
-            'retailer_price' => 39.99,
-            'dealer_price' => 32.00,
-            'wholesale_price' => 28.00,
-            'stock' => 120.00,
-            'alert_quantity' => 15.00,
+            'category_id' => $catHot,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Special Cappuccino with Foam',
+            'code' => 'COF-002',
+            'purchase_price' => 25.00,
+            'retailer_price' => 70.00,
+            'dealer_price' => 70.00,
+            'wholesale_price' => 70.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
             'tax_rate' => 5.00,
             'created_at' => now(),
             'updated_at' => now(),
@@ -208,61 +279,187 @@ class DatabaseSeeder extends Seeder
 
         $p3 = DB::table('products')->insertGetId([
             'shop_id' => $shopId,
-            'category_id' => $catElectronics,
-            'brand_id' => $brandApple,
-            'unit_id' => $unitPcs,
-            'name' => 'Apple MagSafe Battery Pack',
-            'code' => '890103003',
-            'purchase_price' => 65.00,
-            'retailer_price' => 99.00,
-            'dealer_price' => 88.00,
-            'wholesale_price' => 80.00,
-            'stock' => 45.00,
-            'alert_quantity' => 8.00,
+            'category_id' => $catHot,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Cafe Mocha Dark Chocolate',
+            'code' => 'COF-003',
+            'purchase_price' => 35.00,
+            'retailer_price' => 90.00,
+            'dealer_price' => 90.00,
+            'wholesale_price' => 90.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
             'tax_rate' => 5.00,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // 9. Parties: Customers (Walk-In, Retailer, Wholesaler, Dealer) & Suppliers
+        $p4 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catCold,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Signature Thick Cold Coffee',
+            'code' => 'COLD-001',
+            'purchase_price' => 30.00,
+            'retailer_price' => 80.00,
+            'dealer_price' => 80.00,
+            'wholesale_price' => 80.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p5 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catCold,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Cold Coffee with Ice Cream',
+            'code' => 'COLD-002',
+            'purchase_price' => 40.00,
+            'retailer_price' => 110.00,
+            'dealer_price' => 110.00,
+            'wholesale_price' => 110.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p6 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catCold,
+            'brand_id' => $brandNescafe,
+            'unit_id' => $unitCup,
+            'name' => 'Oreo Crunch Frappe',
+            'code' => 'COLD-003',
+            'purchase_price' => 50.00,
+            'retailer_price' => 130.00,
+            'dealer_price' => 130.00,
+            'wholesale_price' => 130.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p7 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catSandwich,
+            'brand_id' => $brandFresh,
+            'unit_id' => $unitPlate,
+            'name' => 'Cheese Chilli Toast Sandwich',
+            'code' => 'SND-001',
+            'purchase_price' => 35.00,
+            'retailer_price' => 80.00,
+            'dealer_price' => 80.00,
+            'wholesale_price' => 80.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p8 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catSandwich,
+            'brand_id' => $brandFresh,
+            'unit_id' => $unitPlate,
+            'name' => 'Veg Grilled Paneer Sandwich',
+            'code' => 'SND-002',
+            'purchase_price' => 45.00,
+            'retailer_price' => 110.00,
+            'dealer_price' => 110.00,
+            'wholesale_price' => 110.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p9 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catSnacks,
+            'brand_id' => $brandFresh,
+            'unit_id' => $unitPlate,
+            'name' => 'Crispy Salted French Fries',
+            'code' => 'SNK-001',
+            'purchase_price' => 30.00,
+            'retailer_price' => 70.00,
+            'dealer_price' => 70.00,
+            'wholesale_price' => 70.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $p10 = DB::table('products')->insertGetId([
+            'shop_id' => $shopId,
+            'category_id' => $catSnacks,
+            'brand_id' => $brandFresh,
+            'unit_id' => $unitPlate,
+            'name' => 'Peri Peri Cheesy Fries',
+            'code' => 'SNK-002',
+            'purchase_price' => 45.00,
+            'retailer_price' => 100.00,
+            'dealer_price' => 100.00,
+            'wholesale_price' => 100.00,
+            'stock' => 200.00,
+            'alert_quantity' => 20.00,
+            'tax_rate' => 5.00,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 9. Parties: Customers & Suppliers
         $cWalkIn = DB::table('parties')->insertGetId([
             'shop_id' => $shopId,
             'type' => 'customer',
             'customer_tier' => 'retailer',
             'name' => 'Walk-In Customer',
-            'phone' => '0000000000',
+            'phone' => '9999999999',
             'current_balance' => 0.00,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        $cWholesale = DB::table('parties')->insertGetId([
+        $cCorporate = DB::table('parties')->insertGetId([
             'shop_id' => $shopId,
             'type' => 'customer',
             'customer_tier' => 'wholesaler',
-            'name' => 'Apex Electronics Wholesale LLC',
-            'phone' => '+1 (555) 777-8899',
-            'email' => 'orders@apexelectronics.com',
-            'address' => 'Industrial District, Warehouse 9',
+            'name' => 'Solapur Tech Park Corporate Account',
+            'phone' => '+91 98221 00000',
+            'email' => 'catering@solapurtechpark.in',
+            'address' => 'MIDC Area, Solapur',
             'opening_balance' => 0.00,
-            'current_balance' => 450.00, // Due balance
-            'credit_limit' => 5000.00,
+            'current_balance' => 850.00, // Due balance
+            'credit_limit' => 10000.00,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        $sGlobal = DB::table('parties')->insertGetId([
+        $sMilkDairy = DB::table('parties')->insertGetId([
             'shop_id' => $shopId,
             'type' => 'supplier',
-            'name' => 'Global Distribution Hub',
-            'phone' => '+1 (555) 234-5678',
-            'email' => 'sales@globalhub.com',
-            'current_balance' => -1200.00, // We owe them
+            'name' => 'Solapur Fresh Dairy & Bakery Suppliers',
+            'phone' => '+91 98222 33445',
+            'email' => 'orders@solapurdairy.in',
+            'current_balance' => -2500.00,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        // 10. Sample Completed Sale
+        // 10. Sample Completed Sale (Thermal Receipt)
         $saleId = DB::table('sales')->insertGetId([
             'shop_id' => $shopId,
             'warehouse_id' => $warehouseId,
@@ -270,16 +467,16 @@ class DatabaseSeeder extends Seeder
             'user_id' => $cashier->id,
             'invoice_number' => 'INV-20261018-001',
             'sale_date' => now(),
-            'subtotal' => 388.99,
-            'discount_amount' => 10.00,
-            'tax_amount' => 18.95,
-            'total_amount' => 397.94,
-            'paid_amount' => 400.00,
+            'subtotal' => 150.00,
+            'discount_amount' => 0.00,
+            'tax_amount' => 7.50,
+            'total_amount' => 157.50,
+            'paid_amount' => 160.00,
             'due_amount' => 0.00,
-            'profit_amount' => 130.99,
+            'profit_amount' => 92.50,
             'payment_method' => 'cash',
             'status' => 'completed',
-            'note' => 'Thermal receipt printed on 58mm',
+            'note' => 'Thermal receipt printed on 58mm at counter',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -288,22 +485,22 @@ class DatabaseSeeder extends Seeder
             [
                 'sale_id' => $saleId,
                 'product_id' => $p1,
-                'product_name' => 'Sony WH-1000XM5 Wireless Headphones',
-                'quantity' => 1,
-                'purchase_price' => 240.00,
-                'unit_price' => 349.00,
-                'subtotal' => 349.00,
+                'product_name' => 'Classic NesCafe Hot Coffee',
+                'quantity' => 2,
+                'purchase_price' => 15.00,
+                'unit_price' => 40.00,
+                'subtotal' => 80.00,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'sale_id' => $saleId,
                 'product_id' => $p2,
-                'product_name' => 'Anker 65W Fast USB-C Charger',
+                'product_name' => 'Special Cappuccino with Foam',
                 'quantity' => 1,
-                'purchase_price' => 18.00,
-                'unit_price' => 39.99,
-                'subtotal' => 39.99,
+                'purchase_price' => 25.00,
+                'unit_price' => 70.00,
+                'subtotal' => 70.00,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
