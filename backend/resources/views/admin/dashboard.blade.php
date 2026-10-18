@@ -72,20 +72,20 @@
     </div>
 
     <!-- Quick Action Banner -->
-    <div class="bg-gradient-to-r from-primary to-[#4A00B0] rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between shadow-lg shadow-purple-500/20">
+    <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between shadow-xl border border-blue-800/40">
         <div>
             <h3 class="text-lg font-bold">Quick Operations Hub</h3>
-            <p class="text-sm text-purple-200 mt-1">Easily restock inventory, import wholesale product sheets, or view sales reports.</p>
+            <p class="text-sm text-blue-200 mt-1">Easily restock inventory, import wholesale product sheets, manage branches, or view sales reports.</p>
         </div>
         <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
-            <a href="{{ route('admin.products.create') }}" class="px-4 py-2 bg-white text-primary text-sm font-semibold rounded-xl shadow-sm hover:bg-gray-50 transition">
+            <a href="{{ route('admin.products.create') }}" class="px-4 py-2 bg-white text-blue-900 text-sm font-semibold rounded-xl shadow-sm hover:bg-slate-100 transition">
                 + New Product
             </a>
-            <a href="{{ route('admin.products.import') }}" class="px-4 py-2 bg-purple-700/60 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl border border-purple-400/30 transition">
-                Import Excel Catalog
+            <a href="{{ route('admin.shops.create') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+                + New Store / Branch
             </a>
-            <a href="{{ route('admin.purchases.create') }}" class="px-4 py-2 bg-purple-700/60 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl border border-purple-400/30 transition">
-                + Purchase Restock
+            <a href="{{ route('admin.products.import') }}" class="px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-white text-sm font-semibold rounded-xl border border-slate-600/40 transition">
+                Import Excel Catalog
             </a>
         </div>
     </div>

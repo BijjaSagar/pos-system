@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\AdminPurchaseController;
 use App\Http\Controllers\Web\AdminReportController;
 use App\Http\Controllers\Web\AdminUserController;
 use App\Http\Controllers\Web\AdminSettingController;
+use App\Http\Controllers\Web\AdminShopController;
 
 Route::get('/', function () {
     return redirect()->route('admin.dashboard');
@@ -46,4 +47,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     // Store Settings & Branding
     Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    // Multi-Store & Branches Management
+    Route::resource('shops', AdminShopController::class);
 });
