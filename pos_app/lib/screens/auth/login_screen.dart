@@ -167,7 +167,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     Wrap(
                       alignment: WrapAlignment.center,
                       spacing: 8,
+                      runSpacing: 8,
                       children: [
+                        ActionChip(
+                          avatar: const Icon(Icons.coffee, size: 16, color: Color(0xFFD97706)),
+                          label: const Text('NesCafe Manager', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          onPressed: () {
+                            _emailController.text = 'nescafe@pospro.app';
+                            _passwordController.text = '112233';
+                          },
+                        ),
+                        ActionChip(
+                          avatar: const Icon(Icons.point_of_sale, size: 16, color: Color(0xFF5C06E8)),
+                          label: const Text('Barista Cashier', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          onPressed: () {
+                            _emailController.text = 'barista@pospro.app';
+                            _passwordController.text = '112233';
+                          },
+                        ),
                         ActionChip(
                           label: const Text('Store Owner', style: TextStyle(fontSize: 12)),
                           onPressed: () {
@@ -182,14 +199,37 @@ class _LoginScreenState extends State<LoginScreen> {
                             _passwordController.text = '112233';
                           },
                         ),
-                        ActionChip(
-                          label: const Text('Cashier', style: TextStyle(fontSize: 12)),
-                          onPressed: () {
-                            _emailController.text = 'cashier@pospro.app';
-                            _passwordController.text = '112233';
-                          },
-                        ),
                       ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Cloud Server Indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green.shade200),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.cloud_done_rounded, color: Colors.green, size: 16),
+                          SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Live Cloud Server: https://vaakai.app/api',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF1B5E20),
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

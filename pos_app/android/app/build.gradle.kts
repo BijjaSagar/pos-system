@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.possaas.pos_app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -16,8 +16,8 @@ android {
 
     defaultConfig {
         applicationId = "com.possaas.pos_app"
-        minSdk = 21
-        targetSdk = 35
+        minSdk = flutter.minSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

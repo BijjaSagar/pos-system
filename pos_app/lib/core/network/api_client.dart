@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,15 +9,13 @@ class ApiClient {
   String? _token;
 
   ApiClient._internal() {
-    // Android emulator uses 10.0.2.2 to access host machine, iOS/desktop uses localhost
-    String defaultBase = Platform.isAndroid 
-        ? 'http://10.0.2.2:8000/api' 
-        : 'http://127.0.0.1:8000/api';
+    // Production Cloud URL for deployed POS SaaS backend on Hostinger
+    const String defaultBase = 'https://vaakai.app/api';
 
     dio = Dio(BaseOptions(
       baseUrl: defaultBase,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
